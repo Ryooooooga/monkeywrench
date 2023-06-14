@@ -1,7 +1,5 @@
 pub mod node;
 
-use clap;
-
 #[derive(Debug, clap::Parser)]
 #[command(version, disable_version_flag = true, author, about)]
 pub struct Command {
