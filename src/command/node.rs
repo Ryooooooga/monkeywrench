@@ -93,10 +93,22 @@ fn load_scripts() -> anyhow::Result<Option<BTreeMap<String, String>>> {
     Ok(Some(valid_scripts))
 }
 
-fn scripts(_args: &NodeScriptsArgs) -> anyhow::Result<()> {
+fn scripts(args: &NodeScriptsArgs) -> anyhow::Result<()> {
     let scripts = load_scripts()?;
 
-    if let Some(scripts) = scripts {
+    if let Some(has) = &args.has {
+        let has_script = scripts
+            .as_ref()
+            .map(|s| s.contains_key(has))
+            .unwrap_or(false);
+
+        if !has_script {
+            std::process::exit(1);
+        }
+        return Ok(());
+    }
+
+    if let Some(scripts) = &scripts {
         for (key, value) in scripts {
             println!("{key}\t{value}");
         }
