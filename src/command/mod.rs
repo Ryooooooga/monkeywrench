@@ -29,4 +29,13 @@ pub enum NodeSubcommand {
 
     #[command()]
     PackageManager,
+
+    #[command()]
+    Scripts(NodeScriptsArgs),
+}
+
+#[derive(Debug, clap::Args)]
+pub struct NodeScriptsArgs {
+    #[arg(long)]
+    pub has: Option<String>,
 }
