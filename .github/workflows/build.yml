@@ -11,26 +11,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: rustup component add
-        run: rustup component add rustfmt
+      - name: rustup component add clippy rustfmt
+        run: rustup component add clippy rustfmt
 
-      - name: cargo fmt --verbose --all -- --check
-        run: cargo fmt --verbose --all -- --check
+      - name: cargo fmt -- --check
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --verbose --all -- --check
 
-      - name: rustup component add
-        run: rustup component add clippy
-
-      - name: cargo clippy --verbose --all -- -D warnings
-        run: cargo clippy --verbose --all -- -D warnings
+      - name: cargo clippy -- --all
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --verbose --all -- -D warnings
 
   build:
     name: Build
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Build
         run: cargo build --verbose
@@ -64,7 +67,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -106,7 +109,7 @@ jobs:
         shell: bash
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: artifact-${{ matrix.target }}
           path: ${{ steps.asset.outputs.asset }}
@@ -119,7 +122,7 @@ jobs:
 
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: Rename assets
         id: asset
@@ -152,6 +155,7 @@ jobs:
       - name: Upload
         uses: softprops/action-gh-release@v1
         with:
+          generate_release_notes: true
           files: |
             checksum.txt
             ${{ steps.asset.outputs.asset-x86_64-apple-darwin }}
