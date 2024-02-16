@@ -41,6 +41,9 @@ jobs:
       - name: Run unit tests
         run: cargo test --verbose
 
+      - name: Run integration tests
+        run: ./test/integration.bash
+
   release-build:
     strategy:
       fail-fast: false
