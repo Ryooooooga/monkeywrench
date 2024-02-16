@@ -1,5 +1,5 @@
-use super::{NodeArgs, NodeScriptsArgs, NodeSubcommand};
-use crate::path::find_nearest;
+use super::{NodeArgs, NodeScriptsArgs, NodeSubcommand, NodeTopLevelArgs};
+use crate::path::{find_nearest, FindOptions};
 use derive_more::Display;
 use serde::Deserialize;
 use std::{
@@ -9,6 +9,7 @@ use std::{
 };
 
 const PACKAGE_JSON: &str = "package.json";
+const NODE_MODULES: &str = "node_modules";
 const PACKAGE_LOCK_JSON: &str = "package-lock.json";
 const YARN_LOCK: &str = "yarn.lock";
 const PNPM_LOCK_YAML: &str = "pnpm-lock.yaml";
@@ -19,7 +20,17 @@ struct PackageJson {
 }
 
 fn find_package_json(cwd: &Path) -> Option<PathBuf> {
-    find_nearest(cwd, &[PACKAGE_JSON])
+    find_nearest(cwd, &[PACKAGE_JSON], FindOptions::File)
+}
+
+fn find_top_level(cwd: &Path, root: bool) -> Option<PathBuf> {
+    if root {
+        if let Some(node_modules) = find_nearest(cwd, &[NODE_MODULES], FindOptions::Directory) {
+            return Some(node_modules.parent().unwrap().to_path_buf());
+        }
+    }
+
+    Some(find_package_json(cwd)?.parent().unwrap().to_path_buf())
 }
 
 fn load_package_json() -> anyhow::Result<Option<PackageJson>> {
@@ -35,13 +46,9 @@ fn load_package_json() -> anyhow::Result<Option<PackageJson>> {
     Ok(Some(package_json))
 }
 
-fn toplevel() -> anyhow::Result<()> {
+fn toplevel(args: &NodeTopLevelArgs) -> anyhow::Result<()> {
     let cwd = std::env::current_dir()?;
-    let package_json_path = find_package_json(&cwd);
-    let toplevel = match package_json_path {
-        Some(path) => path.parent().unwrap().to_path_buf(),
-        None => cwd,
-    };
+    let toplevel = find_top_level(&cwd, args.root).unwrap_or(cwd);
 
     println!("{}", toplevel.display());
 
@@ -60,7 +67,11 @@ enum PackageManager {
 
 fn detect_package_manager() -> anyhow::Result<PackageManager> {
     let cwd = std::env::current_dir()?;
-    let lock_path = find_nearest(&cwd, &[PACKAGE_LOCK_JSON, YARN_LOCK, PNPM_LOCK_YAML]);
+    let lock_path = find_nearest(
+        &cwd,
+        &[PACKAGE_LOCK_JSON, YARN_LOCK, PNPM_LOCK_YAML],
+        FindOptions::File,
+    );
 
     let package_manager = match lock_path {
         Some(p) if p.ends_with(YARN_LOCK) => PackageManager::Yarn,
@@ -119,7 +130,7 @@ fn scripts(args: &NodeScriptsArgs) -> anyhow::Result<()> {
 
 pub fn run(args: &NodeArgs) -> anyhow::Result<()> {
     match &args.subcommand {
-        NodeSubcommand::Toplevel => toplevel(),
+        NodeSubcommand::Toplevel(args) => toplevel(args),
         NodeSubcommand::PackageManager => package_manager(),
         NodeSubcommand::Scripts(args) => scripts(args),
     }

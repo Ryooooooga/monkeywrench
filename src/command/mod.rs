@@ -25,13 +25,19 @@ pub struct NodeArgs {
 #[derive(Debug, clap::Subcommand)]
 pub enum NodeSubcommand {
     #[command()]
-    Toplevel,
+    Toplevel(NodeTopLevelArgs),
 
     #[command()]
     PackageManager,
 
     #[command()]
     Scripts(NodeScriptsArgs),
+}
+
+#[derive(Debug, clap::Args)]
+pub struct NodeTopLevelArgs {
+    #[arg(long)]
+    pub root: bool,
 }
 
 #[derive(Debug, clap::Args)]
