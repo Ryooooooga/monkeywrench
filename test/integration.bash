@@ -247,15 +247,15 @@ node-scripts-invalid-scripts() {
   # +-- package.json
   # +-- src/
   mkdir -p src
-  echo '{"scripts":{"start":0}}' > "package.json"
+  echo '{"scripts":{"start":0,"test":"jest"}}' > "package.json"
 
-  [[ "$(mw node scripts)" = "" ]]
+  [[ "$(mw node scripts)" = $'test\tjest' ]]
   !(mw node scripts --has start)
-  !(mw node scripts --has test)
+  (mw node scripts --has test)
 
-  [[ "$(cd src && mw node scripts)" = "" ]]
+  [[ "$(cd src && mw node scripts)" = $'test\tjest' ]]
   !(cd src && mw node scripts --has start)
-  !(cd src && mw node scripts --has test)
+  (cd src && mw node scripts --has test)
 }
 
 node-scripts-single-scripts() {
