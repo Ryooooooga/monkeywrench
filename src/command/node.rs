@@ -57,11 +57,11 @@ fn toplevel(args: &NodeTopLevelArgs) -> anyhow::Result<()> {
 
 #[derive(Debug, Display)]
 enum PackageManager {
-    #[display(fmt = "npm")]
+    #[display("npm")]
     Npm,
-    #[display(fmt = "yarn")]
+    #[display("yarn")]
     Yarn,
-    #[display(fmt = "pnpm")]
+    #[display("pnpm")]
     Pnpm,
 }
 
