@@ -14,16 +14,25 @@ fn increment_version(version: &str, level: u32) -> anyhow::Result<String> {
     }
 
     let max_level = matches.len();
-    let level = cmp::min(level as usize, max_level);
+    let index = max_level - cmp::min(level as usize, max_level);
 
-    let matched = matches[matches.len() - level];
-    let prefix = &version[..matched.start()];
-    let suffix = &version[matched.end()..];
+    let mut next_version = String::new();
+    next_version.push_str(&version[..matches[index].start()]);
 
-    let n = matched.as_str().parse::<i32>()?;
-    let next = n + 1;
+    let n = matches[index].as_str().parse::<i32>()?;
+    next_version.push_str(format!("{}", n + 1).as_str());
 
-    Ok(format!("{prefix}{next}{suffix}"))
+    let mut last_index = matches[index].end();
+    for m in &matches[index + 1..] {
+        next_version.push_str(&version[last_index..m.start()]);
+        next_version.push('0');
+
+        last_index = m.end();
+    }
+
+    next_version.push_str(&version[last_index..]);
+
+    Ok(next_version)
 }
 
 #[test]
@@ -37,12 +46,12 @@ fn test_increment_version() {
     assert_eq!(increment_version("2", 2).unwrap(), "3");
 
     assert_eq!(increment_version("v1.2.3", 1).unwrap(), "v1.2.4");
-    assert_eq!(increment_version("v1.2.3", 2).unwrap(), "v1.3.3");
-    assert_eq!(increment_version("v1.2.3", 3).unwrap(), "v2.2.3");
+    assert_eq!(increment_version("v1.2.3", 2).unwrap(), "v1.3.0");
+    assert_eq!(increment_version("v1.2.3", 3).unwrap(), "v2.0.0");
 
     assert_eq!(increment_version("1.2.3", 1).unwrap(), "1.2.4");
-    assert_eq!(increment_version("1.2.3", 2).unwrap(), "1.3.3");
-    assert_eq!(increment_version("1.2.3", 3).unwrap(), "2.2.3");
+    assert_eq!(increment_version("1.2.3", 2).unwrap(), "1.3.0");
+    assert_eq!(increment_version("1.2.3", 3).unwrap(), "2.0.0");
 
     assert_eq!(
         increment_version("v1.2.3-alpha.4", 1).unwrap(),
@@ -50,15 +59,15 @@ fn test_increment_version() {
     );
     assert_eq!(
         increment_version("v1.2.3-alpha.4", 2).unwrap(),
-        "v1.2.4-alpha.4"
+        "v1.2.4-alpha.0"
     );
     assert_eq!(
         increment_version("v1.2.3-alpha.4", 3).unwrap(),
-        "v1.3.3-alpha.4"
+        "v1.3.0-alpha.0"
     );
     assert_eq!(
         increment_version("v1.2.3-alpha.4", 4).unwrap(),
-        "v2.2.3-alpha.4"
+        "v2.0.0-alpha.0"
     );
 }
 
