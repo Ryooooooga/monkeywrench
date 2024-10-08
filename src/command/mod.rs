@@ -1,5 +1,6 @@
 pub mod deno;
 pub mod node;
+pub mod version;
 
 #[derive(Debug, clap::Parser)]
 #[command(version, disable_version_flag = true, author, about)]
@@ -18,6 +19,9 @@ pub enum Subcommand {
 
     #[command()]
     Node(NodeArgs),
+
+    #[command()]
+    Version(VersionArgs),
 }
 
 // Deno
@@ -77,4 +81,26 @@ pub struct NodeTopLevelArgs {
 pub struct NodeScriptsArgs {
     #[arg(long)]
     pub has: Option<String>,
+}
+
+// Version
+#[derive(Debug, clap::Args)]
+pub struct VersionArgs {
+    #[command(subcommand)]
+    pub subcommand: VersionSubcommand,
+}
+
+#[derive(Debug, clap::Subcommand)]
+pub enum VersionSubcommand {
+    #[command()]
+    Inc(VersionIncArgs),
+}
+
+#[derive(Debug, clap::Args)]
+pub struct VersionIncArgs {
+    #[arg(long)]
+    pub level: u32,
+
+    #[arg()]
+    pub version: String,
 }

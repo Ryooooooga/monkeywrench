@@ -10,5 +10,6 @@ fn main() -> anyhow::Result<()> {
     match &cmd.subcommand {
         Subcommand::Deno(args) => command::deno::run(args),
         Subcommand::Node(args) => command::node::run(args),
+        Subcommand::Version(args) => command::version::run(args),
     }
 }
