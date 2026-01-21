@@ -9,7 +9,6 @@ use std::{
 };
 
 const PACKAGE_JSON: &str = "package.json";
-const NODE_MODULES: &str = "node_modules";
 const PACKAGE_LOCK_JSON: &str = "package-lock.json";
 const YARN_LOCK: &str = "yarn.lock";
 const PNPM_LOCK_YAML: &str = "pnpm-lock.yaml";
@@ -23,9 +22,17 @@ fn find_package_json(cwd: &Path) -> Option<PathBuf> {
     find_nearest(cwd, &[PACKAGE_JSON], FindOptions::File)
 }
 
+fn find_lock_file(cwd: &Path) -> Option<PathBuf> {
+    find_nearest(
+        cwd,
+        &[PACKAGE_LOCK_JSON, YARN_LOCK, PNPM_LOCK_YAML],
+        FindOptions::File,
+    )
+}
+
 fn find_top_level(cwd: &Path, root: bool) -> Option<PathBuf> {
-    if root && let Some(node_modules) = find_nearest(cwd, &[NODE_MODULES], FindOptions::Directory) {
-        return Some(node_modules.parent().unwrap().to_path_buf());
+    if root && let Some(lock_file) = find_lock_file(cwd) {
+        return Some(lock_file.parent().unwrap().to_path_buf());
     }
 
     Some(find_package_json(cwd)?.parent().unwrap().to_path_buf())
@@ -65,11 +72,7 @@ enum PackageManager {
 
 fn detect_package_manager() -> anyhow::Result<PackageManager> {
     let cwd = std::env::current_dir()?;
-    let lock_path = find_nearest(
-        &cwd,
-        &[PACKAGE_LOCK_JSON, YARN_LOCK, PNPM_LOCK_YAML],
-        FindOptions::File,
-    );
+    let lock_path = find_lock_file(&cwd);
 
     let package_manager = match lock_path {
         Some(p) if p.ends_with(YARN_LOCK) => PackageManager::Yarn,

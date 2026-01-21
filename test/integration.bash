@@ -173,17 +173,18 @@ run-test deno-tasks-multi-tasks
 
 # monkeywrench node toplevel
 
-node-toplevel-with-node_modules() {
+node-toplevel-with-lock() {
   set -x
   # ./
   # +-- package.json
+  # +-- package-lock.json
   # +-- index.js
-  # +-- node_modules/
   # +-- src/
   #     +-- index.js
-  mkdir -p node_modules src
+  mkdir -p src
   touch \
     package.json \
+    package-lock.json \
     index.js \
     src/index.js
 
@@ -193,7 +194,7 @@ node-toplevel-with-node_modules() {
   [[ "$(cd src && mw node toplevel --root)" = "$PWD" ]]
 }
 
-node-toplevel-no-node_modules() {
+node-toplevel-no-lock() {
   set -x
   # ./
   # +-- package.json
@@ -212,7 +213,7 @@ node-toplevel-no-node_modules() {
   [[ "$(cd src && mw node toplevel --root)" = "$PWD" ]]
 }
 
-node-toplevel-workspace-no-node_modules() {
+node-toplevel-workspace-no-lock() {
   set -x
   # ./
   # +-- package.json
@@ -243,12 +244,12 @@ node-toplevel-workspace-no-node_modules() {
   [[ "$(cd workspace/src && mw node toplevel --root)" = "$PWD/workspace" ]]
 }
 
-node-toplevel-workspace-with-node_modules() {
+node-toplevel-workspace-with-lock() {
   set -x
   # ./
   # +-- package.json
+  # +-- package-lock.json
   # +-- index.js
-  # +-- node_modules/
   # +-- src/
   #     +-- index.js
   # +-- workspace/
@@ -256,9 +257,10 @@ node-toplevel-workspace-with-node_modules() {
   #     +-- index.js
   #     +-- src/
   #         +-- index.js
-  mkdir -p node_modules src workspace/src
+  mkdir -p src workspace/src
   touch \
     package.json \
+    package-lock.json \
     index.js \
     src/index.js \
     workspace/package.json \
@@ -275,10 +277,10 @@ node-toplevel-workspace-with-node_modules() {
   [[ "$(cd workspace/src && mw node toplevel --root)" = "$PWD" ]]
 }
 
-run-test node-toplevel-no-node_modules
-run-test node-toplevel-with-node_modules
-run-test node-toplevel-workspace-no-node_modules
-run-test node-toplevel-workspace-with-node_modules
+run-test node-toplevel-no-lock
+run-test node-toplevel-with-lock
+run-test node-toplevel-workspace-no-lock
+run-test node-toplevel-workspace-with-lock
 
 # monkeywrench node package-manager
 
