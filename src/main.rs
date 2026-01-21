@@ -1,15 +1,15 @@
 pub mod path;
 
-mod command;
+mod commands;
 
 use clap::Parser;
-use command::{Command, Subcommand};
+use commands::{Command, Subcommand};
 
 fn main() -> anyhow::Result<()> {
     let cmd = Command::parse();
     match &cmd.subcommand {
-        Subcommand::Deno(args) => command::deno::run(args),
-        Subcommand::Node(args) => command::node::run(args),
-        Subcommand::Version(args) => command::version::run(args),
+        Subcommand::Deno(args) => commands::deno::run(args),
+        Subcommand::Node(args) => commands::node::run(args),
+        Subcommand::Version(args) => commands::version::run(args),
     }
 }
