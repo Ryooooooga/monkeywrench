@@ -1,5 +1,7 @@
 use super::{NodeArgs, NodeScriptsArgs, NodeSubcommand, NodeTopLevelArgs};
-use crate::path::{FindOptions, find_nearest};
+use crate::path::{
+    FindOptions, PACKAGE_JSON, PACKAGE_LOCK_JSON, PNPM_LOCK_YAML, YARN_LOCK, find_nearest,
+};
 use derive_more::Display;
 use serde::Deserialize;
 use std::{
@@ -7,11 +9,6 @@ use std::{
     fs::File,
     path::{Path, PathBuf},
 };
-
-const PACKAGE_JSON: &str = "package.json";
-const PACKAGE_LOCK_JSON: &str = "package-lock.json";
-const YARN_LOCK: &str = "yarn.lock";
-const PNPM_LOCK_YAML: &str = "pnpm-lock.yaml";
 
 #[derive(Debug, Deserialize)]
 struct PackageJson {

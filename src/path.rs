@@ -1,5 +1,11 @@
 use std::path::{Path, PathBuf};
 
+pub const PACKAGE_JSON: &str = "package.json";
+pub const PACKAGE_LOCK_JSON: &str = "package-lock.json";
+pub const YARN_LOCK: &str = "yarn.lock";
+pub const PNPM_LOCK_YAML: &str = "pnpm-lock.yaml";
+pub const DENO_JSON: &str = "deno.json";
+
 #[derive(Debug)]
 pub enum FindOptions {
     Anything,

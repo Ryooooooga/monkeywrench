@@ -1,13 +1,11 @@
 use super::{DenoArgs, DenoSubcommand, DenoTasksArgs, DenoTopLevelArgs};
-use crate::path::{FindOptions, find_nearest};
+use crate::path::{DENO_JSON, FindOptions, find_nearest};
 use serde::Deserialize;
 use std::{
     collections::BTreeMap,
     fs::File,
     path::{Path, PathBuf},
 };
-
-const DENO_JSON: &str = "deno.json";
 
 #[derive(Debug, Deserialize)]
 struct DenoJson {
