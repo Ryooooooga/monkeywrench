@@ -5,6 +5,9 @@ pub const PACKAGE_LOCK_JSON: &str = "package-lock.json";
 pub const YARN_LOCK: &str = "yarn.lock";
 pub const PNPM_LOCK_YAML: &str = "pnpm-lock.yaml";
 pub const DENO_JSON: &str = "deno.json";
+pub const MAKEFILE: &str = "Makefile";
+pub const CARGO_TOML: &str = "Cargo.toml";
+pub const GO_MOD: &str = "go.mod";
 
 #[derive(Debug)]
 pub enum FindOptions {

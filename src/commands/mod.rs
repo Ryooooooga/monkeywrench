@@ -1,3 +1,4 @@
+pub mod command;
 pub mod deno;
 pub mod node;
 pub mod version;
@@ -15,6 +16,9 @@ pub struct Command {
 #[derive(Debug, clap::Subcommand)]
 pub enum Subcommand {
     #[command()]
+    Command(CommandArgs),
+
+    #[command()]
     Deno(DenoArgs),
 
     #[command()]
@@ -22,6 +26,22 @@ pub enum Subcommand {
 
     #[command()]
     Version(VersionArgs),
+}
+
+// Commands
+#[derive(Debug, clap::Args)]
+pub struct CommandArgs {
+    #[arg(long)]
+    pub action: Option<CommandAction>,
+}
+
+#[derive(Debug, clap::ValueEnum, Clone)]
+pub enum CommandAction {
+    Build,
+    Run,
+    Test,
+    Lint,
+    Format,
 }
 
 // Deno

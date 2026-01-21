@@ -8,6 +8,7 @@ use commands::{Command, Subcommand};
 fn main() -> anyhow::Result<()> {
     let cmd = Command::parse();
     match &cmd.subcommand {
+        Subcommand::Command(args) => commands::command::run(args),
         Subcommand::Deno(args) => commands::deno::run(args),
         Subcommand::Node(args) => commands::node::run(args),
         Subcommand::Version(args) => commands::version::run(args),
