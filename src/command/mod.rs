@@ -41,10 +41,7 @@ pub enum DenoSubcommand {
 }
 
 #[derive(Debug, clap::Args)]
-pub struct DenoTopLevelArgs {
-    #[arg(long)]
-    pub root: bool,
-}
+pub struct DenoTopLevelArgs {}
 
 #[derive(Debug, clap::Args)]
 pub struct DenoTasksArgs {

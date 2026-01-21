@@ -33,9 +33,7 @@ deno-toplevel-no-deno-json() {
     src/index.js
 
   [[ "$(mw deno toplevel)" = "$PWD" ]]
-  [[ "$(mw deno toplevel --root)" = "$PWD" ]]
   [[ "$(cd src && mw deno toplevel)" = "$PWD/src" ]]
-  [[ "$(cd src && mw deno toplevel --root)" = "$PWD/src" ]]
 }
 
 deno-toplevel-with-deno-json() {
@@ -52,9 +50,7 @@ deno-toplevel-with-deno-json() {
     src/index.js
 
   [[ "$(mw deno toplevel)" = "$PWD" ]]
-  [[ "$(mw deno toplevel --root)" = "$PWD" ]]
   [[ "$(cd src && mw deno toplevel)" = "$PWD" ]]
-  [[ "$(cd src && mw deno toplevel --root)" = "$PWD" ]]
 }
 
 run-test deno-toplevel-no-deno-json

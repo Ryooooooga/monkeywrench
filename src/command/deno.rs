@@ -10,38 +10,34 @@ use std::{
 const DENO_JSON: &str = "deno.json";
 
 #[derive(Debug, Deserialize)]
-struct PackageJson {
+struct DenoJson {
     tasks: Option<serde_json::Map<String, serde_json::Value>>,
 }
 
-fn find_package_json(cwd: &Path) -> Option<PathBuf> {
+fn find_deno_json(cwd: &Path) -> Option<PathBuf> {
     find_nearest(cwd, &[DENO_JSON], FindOptions::File)
 }
 
-fn find_top_level(cwd: &Path, root: bool) -> Option<PathBuf> {
-    if root && let Some(node_modules) = find_nearest(cwd, &[DENO_JSON], FindOptions::Directory) {
-        return Some(node_modules.parent().unwrap().to_path_buf());
-    }
-
-    Some(find_package_json(cwd)?.parent().unwrap().to_path_buf())
+fn find_top_level(cwd: &Path) -> Option<PathBuf> {
+    Some(find_deno_json(cwd)?.parent().unwrap().to_path_buf())
 }
 
-fn load_package_json() -> anyhow::Result<Option<PackageJson>> {
+fn load_deno_json() -> anyhow::Result<Option<DenoJson>> {
     let cwd = std::env::current_dir()?;
-    let package_json_path = match find_package_json(&cwd) {
+    let deno_json_path = match find_deno_json(&cwd) {
         Some(path) => path,
         None => return Ok(None),
     };
 
-    let file = File::open(package_json_path)?;
-    let package_json = serde_json::from_reader(file)?;
+    let file = File::open(deno_json_path)?;
+    let deno_json = serde_json::from_reader(file)?;
 
-    Ok(Some(package_json))
+    Ok(Some(deno_json))
 }
 
-fn toplevel(args: &DenoTopLevelArgs) -> anyhow::Result<()> {
+fn toplevel(_args: &DenoTopLevelArgs) -> anyhow::Result<()> {
     let cwd = std::env::current_dir()?;
-    let toplevel = find_top_level(&cwd, args.root).unwrap_or(cwd);
+    let toplevel = find_top_level(&cwd).unwrap_or(cwd);
 
     println!("{}", toplevel.display());
 
@@ -49,7 +45,7 @@ fn toplevel(args: &DenoTopLevelArgs) -> anyhow::Result<()> {
 }
 
 fn load_tasks() -> anyhow::Result<Option<BTreeMap<String, String>>> {
-    let tasks = load_package_json()?.and_then(|p| p.tasks);
+    let tasks = load_deno_json()?.and_then(|p| p.tasks);
     let tasks = match tasks {
         Some(tasks) => tasks,
         None => return Ok(None),
