@@ -1,5 +1,5 @@
 use super::{NodeArgs, NodeScriptsArgs, NodeSubcommand, NodeTopLevelArgs};
-use crate::path::{find_nearest, FindOptions};
+use crate::path::{FindOptions, find_nearest};
 use derive_more::Display;
 use serde::Deserialize;
 use std::{
@@ -24,10 +24,8 @@ fn find_package_json(cwd: &Path) -> Option<PathBuf> {
 }
 
 fn find_top_level(cwd: &Path, root: bool) -> Option<PathBuf> {
-    if root {
-        if let Some(node_modules) = find_nearest(cwd, &[NODE_MODULES], FindOptions::Directory) {
-            return Some(node_modules.parent().unwrap().to_path_buf());
-        }
+    if root && let Some(node_modules) = find_nearest(cwd, &[NODE_MODULES], FindOptions::Directory) {
+        return Some(node_modules.parent().unwrap().to_path_buf());
     }
 
     Some(find_package_json(cwd)?.parent().unwrap().to_path_buf())
