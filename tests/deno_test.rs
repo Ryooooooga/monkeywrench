@@ -10,11 +10,17 @@ mod tasks {
     }
 
     fn run_tasks_has(env: &TestEnv, dir: &str, script: &str) -> i32 {
-        let (status, stdout, stderr) =
-            env.run_command_output(&["deno", "tasks", "--has", script], dir);
-        assert_eq!(stdout, "");
-        assert_eq!(stderr, "");
-        status.code().unwrap()
+        match env.run_command_output(&["deno", "tasks", "--has", script], dir) {
+            Ok((stdout, stderr)) => {
+                assert_eq!(stdout, "");
+                assert_eq!(stderr, "");
+                0
+            }
+            Err((code, stderr)) => {
+                assert_eq!(stderr, "");
+                code
+            }
+        }
     }
 
     #[test]
@@ -104,11 +110,11 @@ mod tasks {
         );
         env.create_dir_all("src");
 
-        assert_eq!(run_tasks(env, "."), "test\tdeno test");
+        assert_eq!(run_tasks(env, "."), "test\tdeno test\n");
         assert_eq!(run_tasks_has(env, ".", "start"), 1);
         assert_eq!(run_tasks_has(env, ".", "test"), 0);
 
-        assert_eq!(run_tasks(env, "src"), "test\tdeno test");
+        assert_eq!(run_tasks(env, "src"), "test\tdeno test\n");
         assert_eq!(run_tasks_has(env, "src", "start"), 1);
         assert_eq!(run_tasks_has(env, "src", "test"), 0);
     }
@@ -132,11 +138,11 @@ mod tasks {
         );
         env.create_dir_all("src");
 
-        assert_eq!(run_tasks(env, "."), "start\tdeno run main.ts");
+        assert_eq!(run_tasks(env, "."), "start\tdeno run main.ts\n");
         assert_eq!(run_tasks_has(env, ".", "start"), 0);
         assert_eq!(run_tasks_has(env, ".", "test"), 1);
 
-        assert_eq!(run_tasks(env, "src"), "start\tdeno run main.ts");
+        assert_eq!(run_tasks(env, "src"), "start\tdeno run main.ts\n");
         assert_eq!(run_tasks_has(env, "src", "start"), 0);
         assert_eq!(run_tasks_has(env, "src", "test"), 1);
     }
@@ -163,7 +169,7 @@ mod tasks {
 
         assert_eq!(
             run_tasks(env, "."),
-            "start\tdeno run main.ts\ntest\tdeno test"
+            "start\tdeno run main.ts\ntest\tdeno test\n"
         );
         assert_eq!(run_tasks_has(env, ".", "start"), 0);
         assert_eq!(run_tasks_has(env, ".", "test"), 0);
@@ -171,7 +177,7 @@ mod tasks {
 
         assert_eq!(
             run_tasks(env, "src"),
-            "start\tdeno run main.ts\ntest\tdeno test"
+            "start\tdeno run main.ts\ntest\tdeno test\n"
         );
         assert_eq!(run_tasks_has(env, "src", "start"), 0);
         assert_eq!(run_tasks_has(env, "src", "test"), 0);
@@ -198,8 +204,8 @@ mod toplevel {
         env.create_file("src/index.ts");
 
         let root = env.path().to_string_lossy().to_string();
-        assert_eq!(run_toplevel(env, "."), root);
-        assert_eq!(run_toplevel(env, "src"), format!("{root}/src"));
+        assert_eq!(run_toplevel(env, "."), format!("{root}\n"));
+        assert_eq!(run_toplevel(env, "src"), format!("{root}/src\n"));
     }
 
     #[test]
@@ -216,7 +222,7 @@ mod toplevel {
         env.create_file("src/index.ts");
 
         let root = env.path().to_string_lossy().to_string();
-        assert_eq!(run_toplevel(env, "."), root);
-        assert_eq!(run_toplevel(env, "src"), root);
+        assert_eq!(run_toplevel(env, "."), format!("{root}\n"));
+        assert_eq!(run_toplevel(env, "src"), format!("{root}\n"));
     }
 }

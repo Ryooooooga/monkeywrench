@@ -3,7 +3,7 @@ use std::{
     fs::{File, canonicalize, create_dir_all},
     io::Write,
     path::PathBuf,
-    process::{Command, ExitStatus},
+    process::Command,
 };
 use tempfile::TempDir;
 
@@ -11,6 +11,7 @@ pub struct TestEnv {
     test_dir: TempDir,
 }
 
+#[allow(unused)]
 impl TestEnv {
     pub fn new() -> Self {
         let test_dir = TempDir::new().expect("Failed to create temp dir");
@@ -41,17 +42,16 @@ impl TestEnv {
     }
 
     pub fn run_command_in(&self, args: &[&str], dir: &str) -> String {
-        let (status, stdout, stderr) = self.run_command_output(args, dir);
-
-        assert!(
-            status.success(),
-            "command {args:?} failed with stderr: {stderr}"
-        );
+        let (stdout, stderr) = self.run_command_output(args, dir).unwrap();
         assert_eq!(stderr, "");
-        stdout.trim_end_matches(&['\r', '\n']).to_string()
+        stdout.to_string()
     }
 
-    pub fn run_command_output(&self, args: &[&str], dir: &str) -> (ExitStatus, String, String) {
+    pub fn run_command_output(
+        &self,
+        args: &[&str],
+        dir: &str,
+    ) -> Result<(String, String), (i32, String)> {
         let command_path = self.path().join(dir);
 
         let output = cli()
@@ -59,14 +59,14 @@ impl TestEnv {
             .current_dir(command_path)
             .output()
             .expect("Failed to execute command");
-        let stdout = String::from_utf8_lossy(&output.stdout);
-        let stderr = String::from_utf8_lossy(&output.stderr);
+        let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+        let stderr = String::from_utf8_lossy(&output.stderr).to_string();
 
-        (
-            output.status,
-            stdout.trim_end_matches(&['\r', '\n']).to_string(),
-            stderr.trim_end_matches(&['\r', '\n']).to_string(),
-        )
+        if output.status.success() {
+            Ok((stdout, stderr))
+        } else {
+            Err((output.status.code().unwrap_or(-1), stderr))
+        }
     }
 
     pub fn path(&self) -> PathBuf {

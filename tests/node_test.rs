@@ -17,8 +17,8 @@ mod package_manager {
         // +-- src/
         env.create_dir_all("src");
 
-        assert_eq!(run_pkm(env, "."), "npm");
-        assert_eq!(run_pkm(env, "src"), "npm");
+        assert_eq!(run_pkm(env, "."), "npm\n");
+        assert_eq!(run_pkm(env, "src"), "npm\n");
     }
 
     #[test]
@@ -33,8 +33,8 @@ mod package_manager {
         env.create_file("package-lock.json");
         env.create_dir_all("src");
 
-        assert_eq!(run_pkm(env, "."), "npm");
-        assert_eq!(run_pkm(env, "src"), "npm");
+        assert_eq!(run_pkm(env, "."), "npm\n");
+        assert_eq!(run_pkm(env, "src"), "npm\n");
     }
 
     #[test]
@@ -49,8 +49,8 @@ mod package_manager {
         env.create_file("yarn.lock");
         env.create_dir_all("src");
 
-        assert_eq!(run_pkm(env, "."), "yarn");
-        assert_eq!(run_pkm(env, "src"), "yarn");
+        assert_eq!(run_pkm(env, "."), "yarn\n");
+        assert_eq!(run_pkm(env, "src"), "yarn\n");
     }
 
     #[test]
@@ -65,8 +65,8 @@ mod package_manager {
         env.create_file("pnpm-lock.yaml");
         env.create_dir_all("src");
 
-        assert_eq!(run_pkm(env, "."), "pnpm");
-        assert_eq!(run_pkm(env, "src"), "pnpm");
+        assert_eq!(run_pkm(env, "."), "pnpm\n");
+        assert_eq!(run_pkm(env, "src"), "pnpm\n");
     }
 }
 
@@ -78,11 +78,17 @@ mod scripts {
     }
 
     fn run_scripts_has(env: &TestEnv, dir: &str, script: &str) -> i32 {
-        let (status, stdout, stderr) =
-            env.run_command_output(&["node", "scripts", "--has", script], dir);
-        assert_eq!(stdout, "");
-        assert_eq!(stderr, "");
-        status.code().unwrap()
+        match env.run_command_output(&["node", "scripts", "--has", script], dir) {
+            Ok((stdout, stderr)) => {
+                assert_eq!(stdout, "");
+                assert_eq!(stderr, "");
+                0
+            }
+            Err((code, stderr)) => {
+                assert_eq!(stderr, "");
+                code
+            }
+        }
     }
 
     #[test]
@@ -172,11 +178,11 @@ mod scripts {
         );
         env.create_dir_all("src");
 
-        assert_eq!(run_scripts(env, "."), "test\tvitest");
+        assert_eq!(run_scripts(env, "."), "test\tvitest\n");
         assert_eq!(run_scripts_has(env, ".", "start"), 1);
         assert_eq!(run_scripts_has(env, ".", "test"), 0);
 
-        assert_eq!(run_scripts(env, "src"), "test\tvitest");
+        assert_eq!(run_scripts(env, "src"), "test\tvitest\n");
         assert_eq!(run_scripts_has(env, "src", "start"), 1);
         assert_eq!(run_scripts_has(env, "src", "test"), 0);
     }
@@ -200,11 +206,11 @@ mod scripts {
         );
         env.create_dir_all("src");
 
-        assert_eq!(run_scripts(env, "."), "start\tnode server.js");
+        assert_eq!(run_scripts(env, "."), "start\tnode server.js\n");
         assert_eq!(run_scripts_has(env, ".", "start"), 0);
         assert_eq!(run_scripts_has(env, ".", "test"), 1);
 
-        assert_eq!(run_scripts(env, "src"), "start\tnode server.js");
+        assert_eq!(run_scripts(env, "src"), "start\tnode server.js\n");
         assert_eq!(run_scripts_has(env, "src", "start"), 0);
         assert_eq!(run_scripts_has(env, "src", "test"), 1);
     }
@@ -232,7 +238,7 @@ mod scripts {
 
         assert_eq!(
             run_scripts(env, "."),
-            "build\ttsc\nstart\tnode server.js\ntest\tvitest"
+            "build\ttsc\nstart\tnode server.js\ntest\tvitest\n"
         );
         assert_eq!(run_scripts_has(env, ".", "start"), 0);
         assert_eq!(run_scripts_has(env, ".", "test"), 0);
@@ -241,7 +247,7 @@ mod scripts {
 
         assert_eq!(
             run_scripts(env, "src"),
-            "build\ttsc\nstart\tnode server.js\ntest\tvitest"
+            "build\ttsc\nstart\tnode server.js\ntest\tvitest\n"
         );
         assert_eq!(run_scripts_has(env, "src", "start"), 0);
         assert_eq!(run_scripts_has(env, "src", "test"), 0);
@@ -287,7 +293,7 @@ mod scripts {
 
         assert_eq!(
             run_scripts(env, "."),
-            "start\tnode server.js\ntest\tnpm -w workspace test"
+            "start\tnode server.js\ntest\tnpm -w workspace test\n"
         );
         assert_eq!(run_scripts_has(env, ".", "start"), 0);
         assert_eq!(run_scripts_has(env, ".", "test"), 0);
@@ -295,20 +301,20 @@ mod scripts {
 
         assert_eq!(
             run_scripts(env, "src"),
-            "start\tnode server.js\ntest\tnpm -w workspace test"
+            "start\tnode server.js\ntest\tnpm -w workspace test\n"
         );
         assert_eq!(run_scripts_has(env, "src", "start"), 0);
         assert_eq!(run_scripts_has(env, "src", "test"), 0);
         assert_eq!(run_scripts_has(env, "src", "build"), 1);
 
-        assert_eq!(run_scripts(env, "workspace"), "build\ttsc\ntest\tvitest");
+        assert_eq!(run_scripts(env, "workspace"), "build\ttsc\ntest\tvitest\n");
         assert_eq!(run_scripts_has(env, "workspace", "start"), 1);
         assert_eq!(run_scripts_has(env, "workspace", "test"), 0);
         assert_eq!(run_scripts_has(env, "workspace", "build"), 0);
 
         assert_eq!(
             run_scripts(env, "workspace/src"),
-            "build\ttsc\ntest\tvitest"
+            "build\ttsc\ntest\tvitest\n"
         );
         assert_eq!(run_scripts_has(env, "workspace/src", "start"), 1);
         assert_eq!(run_scripts_has(env, "workspace/src", "test"), 0);
@@ -343,10 +349,10 @@ mod toplevel {
         env.create_file("src/index.js");
 
         let root = env.path().to_string_lossy().to_string();
-        assert_eq!(run_toplevel(env, "."), root);
-        assert_eq!(run_toplevel_root(env, "."), root);
-        assert_eq!(run_toplevel(env, "src"), root);
-        assert_eq!(run_toplevel_root(env, "src"), root);
+        assert_eq!(run_toplevel(env, "."), format!("{root}\n"));
+        assert_eq!(run_toplevel_root(env, "."), format!("{root}\n"));
+        assert_eq!(run_toplevel(env, "src"), format!("{root}\n"));
+        assert_eq!(run_toplevel_root(env, "src"), format!("{root}\n"));
     }
 
     #[test]
@@ -363,10 +369,10 @@ mod toplevel {
         env.create_file("src/index.js");
 
         let root = env.path().to_string_lossy().to_string();
-        assert_eq!(run_toplevel(env, "."), root);
-        assert_eq!(run_toplevel_root(env, "."), root);
-        assert_eq!(run_toplevel(env, "src"), root);
-        assert_eq!(run_toplevel_root(env, "src"), root);
+        assert_eq!(run_toplevel(env, "."), format!("{root}\n"));
+        assert_eq!(run_toplevel_root(env, "."), format!("{root}\n"));
+        assert_eq!(run_toplevel(env, "src"), format!("{root}\n"));
+        assert_eq!(run_toplevel_root(env, "src"), format!("{root}\n"));
     }
 
     #[test]
@@ -394,20 +400,26 @@ mod toplevel {
         env.create_file("packages/pkg-b/index.js");
 
         let root = env.path().to_string_lossy().to_string();
-        assert_eq!(run_toplevel(env, "."), root);
-        assert_eq!(run_toplevel_root(env, "."), root);
-        assert_eq!(run_toplevel(env, "src"), root);
-        assert_eq!(run_toplevel_root(env, "src"), root);
+        assert_eq!(run_toplevel(env, "."), format!("{root}\n"));
+        assert_eq!(run_toplevel_root(env, "."), format!("{root}\n"));
+        assert_eq!(run_toplevel(env, "src"), format!("{root}\n"));
+        assert_eq!(run_toplevel_root(env, "src"), format!("{root}\n"));
         assert_eq!(
             run_toplevel(env, "packages/pkg-a"),
-            format!("{root}/packages/pkg-a")
+            format!("{root}/packages/pkg-a\n")
         );
-        assert_eq!(run_toplevel_root(env, "packages/pkg-a"), root);
+        assert_eq!(
+            run_toplevel_root(env, "packages/pkg-a"),
+            format!("{root}\n")
+        );
         assert_eq!(
             run_toplevel(env, "packages/pkg-b"),
-            format!("{root}/packages/pkg-b")
+            format!("{root}/packages/pkg-b\n")
         );
-        assert_eq!(run_toplevel_root(env, "packages/pkg-b"), root);
+        assert_eq!(
+            run_toplevel_root(env, "packages/pkg-b"),
+            format!("{root}\n")
+        );
     }
 
     #[test]
@@ -435,20 +447,26 @@ mod toplevel {
         env.create_file("packages/pkg-b/index.js");
 
         let root = env.path().to_string_lossy().to_string();
-        assert_eq!(run_toplevel(env, "."), root);
-        assert_eq!(run_toplevel_root(env, "."), root);
-        assert_eq!(run_toplevel(env, "src"), root);
-        assert_eq!(run_toplevel_root(env, "src"), root);
+        assert_eq!(run_toplevel(env, "."), format!("{root}\n"));
+        assert_eq!(run_toplevel_root(env, "."), format!("{root}\n"));
+        assert_eq!(run_toplevel(env, "src"), format!("{root}\n"));
+        assert_eq!(run_toplevel_root(env, "src"), format!("{root}\n"));
         assert_eq!(
             run_toplevel(env, "packages/pkg-a"),
-            format!("{root}/packages/pkg-a")
+            format!("{root}/packages/pkg-a\n")
         );
-        assert_eq!(run_toplevel_root(env, "packages/pkg-a"), root);
+        assert_eq!(
+            run_toplevel_root(env, "packages/pkg-a"),
+            format!("{root}\n")
+        );
         assert_eq!(
             run_toplevel(env, "packages/pkg-b"),
-            format!("{root}/packages/pkg-b")
+            format!("{root}/packages/pkg-b\n")
         );
-        assert_eq!(run_toplevel_root(env, "packages/pkg-b"), root);
+        assert_eq!(
+            run_toplevel_root(env, "packages/pkg-b"),
+            format!("{root}\n")
+        );
     }
 
     #[test]
@@ -474,25 +492,25 @@ mod toplevel {
         env.create_file("packages/pkg-b/index.js");
 
         let root = env.path().to_string_lossy().to_string();
-        assert_eq!(run_toplevel(env, "."), root);
-        assert_eq!(run_toplevel_root(env, "."), root);
-        assert_eq!(run_toplevel(env, "src"), root);
-        assert_eq!(run_toplevel_root(env, "src"), root);
+        assert_eq!(run_toplevel(env, "."), format!("{root}\n"));
+        assert_eq!(run_toplevel_root(env, "."), format!("{root}\n"));
+        assert_eq!(run_toplevel(env, "src"), format!("{root}\n"));
+        assert_eq!(run_toplevel_root(env, "src"), format!("{root}\n"));
         assert_eq!(
             run_toplevel(env, "packages/pkg-a"),
-            format!("{root}/packages/pkg-a")
+            format!("{root}/packages/pkg-a\n")
         );
         assert_eq!(
             run_toplevel_root(env, "packages/pkg-a"),
-            format!("{root}/packages/pkg-a")
+            format!("{root}/packages/pkg-a\n")
         );
         assert_eq!(
             run_toplevel(env, "packages/pkg-b"),
-            format!("{root}/packages/pkg-b")
+            format!("{root}/packages/pkg-b\n")
         );
         assert_eq!(
             run_toplevel_root(env, "packages/pkg-b"),
-            format!("{root}/packages/pkg-b")
+            format!("{root}/packages/pkg-b\n")
         );
     }
 }
