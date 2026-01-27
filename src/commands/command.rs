@@ -9,17 +9,6 @@ use crate::path::{
     find_nearest,
 };
 
-#[derive(Debug)]
-enum BuildTool {
-    Npm,
-    Yarn,
-    Pnpm,
-    Deno,
-    Make,
-    Cargo,
-    Go,
-}
-
 fn find_build_file(cwd: &Path) -> Option<PathBuf> {
     find_nearest(
         cwd,
@@ -36,6 +25,89 @@ fn find_build_file(cwd: &Path) -> Option<PathBuf> {
     )
 }
 
+fn get_npm_command(action: &Option<CommandAction>) -> &'static str {
+    match action {
+        None => "npm",
+        Some(CommandAction::Build) => "npm run build",
+        Some(CommandAction::Run) => "npm start",
+        Some(CommandAction::Test) => "npm test",
+        Some(CommandAction::Lint) => "npm run lint",
+        Some(CommandAction::Format) => "npm run fmt",
+        Some(CommandAction::Generate) => "npm run gen",
+    }
+}
+
+fn get_yarn_command(action: &Option<CommandAction>) -> &'static str {
+    match action {
+        None => "yarn",
+        Some(CommandAction::Build) => "yarn build",
+        Some(CommandAction::Run) => "yarn start",
+        Some(CommandAction::Test) => "yarn test",
+        Some(CommandAction::Lint) => "yarn lint",
+        Some(CommandAction::Format) => "yarn fmt",
+        Some(CommandAction::Generate) => "yarn gen",
+    }
+}
+
+fn get_pnpm_command(action: &Option<CommandAction>) -> &'static str {
+    match action {
+        None => "pnpm",
+        Some(CommandAction::Build) => "pnpm build",
+        Some(CommandAction::Run) => "pnpm start",
+        Some(CommandAction::Test) => "pnpm test",
+        Some(CommandAction::Lint) => "pnpm lint",
+        Some(CommandAction::Format) => "pnpm fmt",
+        Some(CommandAction::Generate) => "pnpm gen",
+    }
+}
+
+fn get_deno_command(action: &Option<CommandAction>) -> &'static str {
+    match action {
+        Some(CommandAction::Build) => "deno task build",
+        Some(CommandAction::Run) => "deno task start",
+        Some(CommandAction::Test) => "deno test",
+        Some(CommandAction::Lint) => "deno lint",
+        Some(CommandAction::Format) => "deno fmt",
+        Some(CommandAction::Generate) => "deno task gen",
+        None => "deno",
+    }
+}
+
+fn get_make_command(action: &Option<CommandAction>) -> &'static str {
+    match action {
+        Some(CommandAction::Build) | None => "make",
+        Some(CommandAction::Run) => "make run",
+        Some(CommandAction::Test) => "make test",
+        Some(CommandAction::Lint) => "make lint",
+        Some(CommandAction::Format) => "make fmt",
+        Some(CommandAction::Generate) => "make gen",
+    }
+}
+
+fn get_cargo_command(action: &Option<CommandAction>) -> Option<&'static str> {
+    match action {
+        Some(CommandAction::Build) => Some("cargo build"),
+        Some(CommandAction::Run) => Some("cargo run"),
+        Some(CommandAction::Test) => Some("cargo test"),
+        Some(CommandAction::Lint) => Some("cargo clippy"),
+        Some(CommandAction::Format) => Some("cargo fmt"),
+        Some(CommandAction::Generate) => None,
+        None => Some("cargo"),
+    }
+}
+
+fn get_go_command(action: &Option<CommandAction>) -> &'static str {
+    match action {
+        Some(CommandAction::Build) => "go build",
+        Some(CommandAction::Run) => "go run .",
+        Some(CommandAction::Test) => "go test ./...",
+        Some(CommandAction::Lint) => "golangci-lint run",
+        Some(CommandAction::Format) => "goimports -w .",
+        Some(CommandAction::Generate) => "go gen -v ./...",
+        None => "go",
+    }
+}
+
 pub fn run(args: &CommandArgs) -> anyhow::Result<()> {
     let cwd = std::env::current_dir()?;
     let build_file_path = find_build_file(&cwd);
@@ -44,62 +116,21 @@ pub fn run(args: &CommandArgs) -> anyhow::Result<()> {
         .and_then(|path| path.file_name())
         .and_then(|os_str| os_str.to_str());
 
-    let build_tool = match build_file_name {
-        Some(PACKAGE_LOCK_JSON) => BuildTool::Npm,
-        Some(YARN_LOCK) => BuildTool::Yarn,
-        Some(PNPM_LOCK_YAML) => BuildTool::Pnpm,
-        Some(DENO_JSON) => BuildTool::Deno,
-        Some(MAKEFILE) => BuildTool::Make,
-        Some(CARGO_TOML) => BuildTool::Cargo,
-        Some(GO_MOD) => BuildTool::Go,
-        _ => process::exit(1),
+    let cmd = match build_file_name {
+        Some(PACKAGE_LOCK_JSON) => Some(get_npm_command(&args.action)),
+        Some(YARN_LOCK) => Some(get_yarn_command(&args.action)),
+        Some(PNPM_LOCK_YAML) => Some(get_pnpm_command(&args.action)),
+        Some(DENO_JSON) => Some(get_deno_command(&args.action)),
+        Some(MAKEFILE) => Some(get_make_command(&args.action)),
+        Some(CARGO_TOML) => get_cargo_command(&args.action),
+        Some(GO_MOD) => Some(get_go_command(&args.action)),
+        _ => None,
     };
 
-    let command = match (build_tool, &args.action) {
-        (BuildTool::Npm, Some(CommandAction::Build)) => "npm run build",
-        (BuildTool::Npm, Some(CommandAction::Run)) => "npm start",
-        (BuildTool::Npm, Some(CommandAction::Test)) => "npm test",
-        (BuildTool::Npm, Some(CommandAction::Lint)) => "npm run lint",
-        (BuildTool::Npm, Some(CommandAction::Format)) => "npm run fmt",
-        (BuildTool::Npm, None) => "npm",
-        (BuildTool::Yarn, Some(CommandAction::Build)) => "yarn build",
-        (BuildTool::Yarn, Some(CommandAction::Run)) => "yarn start",
-        (BuildTool::Yarn, Some(CommandAction::Test)) => "yarn test",
-        (BuildTool::Yarn, Some(CommandAction::Lint)) => "yarn lint",
-        (BuildTool::Yarn, Some(CommandAction::Format)) => "yarn fmt",
-        (BuildTool::Yarn, None) => "yarn",
-        (BuildTool::Pnpm, Some(CommandAction::Build)) => "pnpm build",
-        (BuildTool::Pnpm, Some(CommandAction::Run)) => "pnpm start",
-        (BuildTool::Pnpm, Some(CommandAction::Test)) => "pnpm test",
-        (BuildTool::Pnpm, Some(CommandAction::Lint)) => "pnpm lint",
-        (BuildTool::Pnpm, Some(CommandAction::Format)) => "pnpm fmt",
-        (BuildTool::Pnpm, None) => "pnpm",
-        (BuildTool::Deno, Some(CommandAction::Build)) => "deno task build",
-        (BuildTool::Deno, Some(CommandAction::Run)) => "deno task start",
-        (BuildTool::Deno, Some(CommandAction::Test)) => "deno test",
-        (BuildTool::Deno, Some(CommandAction::Lint)) => "deno lint",
-        (BuildTool::Deno, Some(CommandAction::Format)) => "deno fmt",
-        (BuildTool::Deno, None) => "deno",
-        (BuildTool::Make, Some(CommandAction::Build) | None) => "make",
-        (BuildTool::Make, Some(CommandAction::Run)) => "make run",
-        (BuildTool::Make, Some(CommandAction::Test)) => "make test",
-        (BuildTool::Make, Some(CommandAction::Lint)) => "make lint",
-        (BuildTool::Make, Some(CommandAction::Format)) => "make fmt",
-        (BuildTool::Cargo, Some(CommandAction::Build)) => "cargo build",
-        (BuildTool::Cargo, Some(CommandAction::Run)) => "cargo run",
-        (BuildTool::Cargo, Some(CommandAction::Test)) => "cargo test",
-        (BuildTool::Cargo, Some(CommandAction::Lint)) => "cargo clippy",
-        (BuildTool::Cargo, Some(CommandAction::Format)) => "cargo fmt",
-        (BuildTool::Cargo, None) => "cargo",
-        (BuildTool::Go, Some(CommandAction::Build)) => "go build",
-        (BuildTool::Go, Some(CommandAction::Run)) => "go run .",
-        (BuildTool::Go, Some(CommandAction::Test)) => "go test ./...",
-        (BuildTool::Go, Some(CommandAction::Lint)) => "golangci-lint run",
-        (BuildTool::Go, Some(CommandAction::Format)) => "goimports -w .",
-        (BuildTool::Go, None) => "go",
+    match cmd {
+        Some(cmd) => println!("{}", cmd),
+        None => process::exit(1),
     };
-
-    println!("{}", command);
 
     Ok(())
 }

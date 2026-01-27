@@ -42,6 +42,7 @@ pub enum CommandAction {
     Test,
     Lint,
     Format,
+    Generate,
 }
 
 // Deno

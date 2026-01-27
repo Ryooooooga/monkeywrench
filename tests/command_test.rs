@@ -47,6 +47,7 @@ fn npm() {
     assert_eq!(run_cmd_action(env, "test", "."), "npm test\n");
     assert_eq!(run_cmd_action(env, "lint", "."), "npm run lint\n");
     assert_eq!(run_cmd_action(env, "format", "."), "npm run fmt\n");
+    assert_eq!(run_cmd_action(env, "generate", "."), "npm run gen\n");
 
     assert_eq!(run_cmd(env, "src"), "npm\n");
     assert_eq!(run_cmd_action(env, "build", "src"), "npm run build\n");
@@ -54,6 +55,7 @@ fn npm() {
     assert_eq!(run_cmd_action(env, "test", "src"), "npm test\n");
     assert_eq!(run_cmd_action(env, "lint", "src"), "npm run lint\n");
     assert_eq!(run_cmd_action(env, "format", "src"), "npm run fmt\n");
+    assert_eq!(run_cmd_action(env, "generate", "src"), "npm run gen\n");
 }
 
 #[test]
@@ -77,6 +79,7 @@ fn yarn() {
     assert_eq!(run_cmd_action(env, "test", "."), "yarn test\n");
     assert_eq!(run_cmd_action(env, "lint", "."), "yarn lint\n");
     assert_eq!(run_cmd_action(env, "format", "."), "yarn fmt\n");
+    assert_eq!(run_cmd_action(env, "generate", "."), "yarn gen\n");
 
     assert_eq!(run_cmd(env, "src"), "yarn\n");
     assert_eq!(run_cmd_action(env, "build", "src"), "yarn build\n");
@@ -84,6 +87,7 @@ fn yarn() {
     assert_eq!(run_cmd_action(env, "test", "src"), "yarn test\n");
     assert_eq!(run_cmd_action(env, "lint", "src"), "yarn lint\n");
     assert_eq!(run_cmd_action(env, "format", "src"), "yarn fmt\n");
+    assert_eq!(run_cmd_action(env, "generate", "src"), "yarn gen\n");
 }
 
 #[test]
@@ -107,6 +111,7 @@ fn pnpm() {
     assert_eq!(run_cmd_action(env, "test", "."), "pnpm test\n");
     assert_eq!(run_cmd_action(env, "lint", "."), "pnpm lint\n");
     assert_eq!(run_cmd_action(env, "format", "."), "pnpm fmt\n");
+    assert_eq!(run_cmd_action(env, "generate", "."), "pnpm gen\n");
 
     assert_eq!(run_cmd(env, "src"), "pnpm\n");
     assert_eq!(run_cmd_action(env, "build", "src"), "pnpm build\n");
@@ -114,6 +119,7 @@ fn pnpm() {
     assert_eq!(run_cmd_action(env, "test", "src"), "pnpm test\n");
     assert_eq!(run_cmd_action(env, "lint", "src"), "pnpm lint\n");
     assert_eq!(run_cmd_action(env, "format", "src"), "pnpm fmt\n");
+    assert_eq!(run_cmd_action(env, "generate", "src"), "pnpm gen\n");
 }
 
 #[test]
@@ -135,6 +141,7 @@ fn deno() {
     assert_eq!(run_cmd_action(env, "test", "."), "deno test\n");
     assert_eq!(run_cmd_action(env, "lint", "."), "deno lint\n");
     assert_eq!(run_cmd_action(env, "format", "."), "deno fmt\n");
+    assert_eq!(run_cmd_action(env, "generate", "."), "deno task gen\n");
 
     assert_eq!(run_cmd(env, "src"), "deno\n");
     assert_eq!(run_cmd_action(env, "build", "src"), "deno task build\n");
@@ -142,6 +149,7 @@ fn deno() {
     assert_eq!(run_cmd_action(env, "test", "src"), "deno test\n");
     assert_eq!(run_cmd_action(env, "lint", "src"), "deno lint\n");
     assert_eq!(run_cmd_action(env, "format", "src"), "deno fmt\n");
+    assert_eq!(run_cmd_action(env, "generate", "src"), "deno task gen\n");
 }
 
 #[test]
@@ -161,6 +169,7 @@ fn makefile() {
     assert_eq!(run_cmd_action(env, "test", "."), "make test\n");
     assert_eq!(run_cmd_action(env, "lint", "."), "make lint\n");
     assert_eq!(run_cmd_action(env, "format", "."), "make fmt\n");
+    assert_eq!(run_cmd_action(env, "generate", "."), "make gen\n");
 
     assert_eq!(run_cmd(env, "src"), "make\n");
     assert_eq!(run_cmd_action(env, "build", "src"), "make\n");
@@ -168,6 +177,7 @@ fn makefile() {
     assert_eq!(run_cmd_action(env, "test", "src"), "make test\n");
     assert_eq!(run_cmd_action(env, "lint", "src"), "make lint\n");
     assert_eq!(run_cmd_action(env, "format", "src"), "make fmt\n");
+    assert_eq!(run_cmd_action(env, "generate", "src"), "make gen\n");
 }
 
 #[test]
@@ -187,6 +197,10 @@ fn cargo() {
     assert_eq!(run_cmd_action(env, "test", "."), "cargo test\n");
     assert_eq!(run_cmd_action(env, "lint", "."), "cargo clippy\n");
     assert_eq!(run_cmd_action(env, "format", "."), "cargo fmt\n");
+    assert_eq!(
+        run_cmd_action_output(env, "generate", ".").unwrap_err(),
+        (1, "".to_string())
+    );
 
     assert_eq!(run_cmd(env, "src"), "cargo\n");
     assert_eq!(run_cmd_action(env, "build", "src"), "cargo build\n");
@@ -194,6 +208,10 @@ fn cargo() {
     assert_eq!(run_cmd_action(env, "test", "src"), "cargo test\n");
     assert_eq!(run_cmd_action(env, "lint", "src"), "cargo clippy\n");
     assert_eq!(run_cmd_action(env, "format", "src"), "cargo fmt\n");
+    assert_eq!(
+        run_cmd_action_output(env, "generate", "src").unwrap_err(),
+        (1, "".to_string())
+    );
 }
 
 #[test]
@@ -215,6 +233,7 @@ fn go() {
     assert_eq!(run_cmd_action(env, "test", "."), "go test ./...\n");
     assert_eq!(run_cmd_action(env, "lint", "."), "golangci-lint run\n");
     assert_eq!(run_cmd_action(env, "format", "."), "goimports -w .\n");
+    assert_eq!(run_cmd_action(env, "generate", "."), "go gen -v ./...\n");
 
     assert_eq!(run_cmd(env, "pkg"), "go\n");
     assert_eq!(run_cmd_action(env, "build", "pkg"), "go build\n");
@@ -222,6 +241,7 @@ fn go() {
     assert_eq!(run_cmd_action(env, "test", "pkg"), "go test ./...\n");
     assert_eq!(run_cmd_action(env, "lint", "pkg"), "golangci-lint run\n");
     assert_eq!(run_cmd_action(env, "format", "pkg"), "goimports -w .\n");
+    assert_eq!(run_cmd_action(env, "generate", "pkg"), "go gen -v ./...\n");
 }
 
 #[test]
@@ -255,6 +275,10 @@ fn unknown() {
         run_cmd_action_output(env, "format", ".").unwrap_err(),
         (1, "".to_string())
     );
+    assert_eq!(
+        run_cmd_action_output(env, "generate", ".").unwrap_err(),
+        (1, "".to_string())
+    );
 
     assert_eq!(run_cmd_output(env, "src").unwrap_err(), (1, "".to_string()));
     assert_eq!(
@@ -275,6 +299,10 @@ fn unknown() {
     );
     assert_eq!(
         run_cmd_action_output(env, "format", "src").unwrap_err(),
+        (1, "".to_string())
+    );
+    assert_eq!(
+        run_cmd_action_output(env, "generate", "src").unwrap_err(),
         (1, "".to_string())
     );
 }
