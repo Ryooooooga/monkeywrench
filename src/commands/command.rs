@@ -5,24 +5,30 @@ use std::{
 
 use super::{CommandAction, CommandArgs};
 use crate::path::{
-    CARGO_TOML, DENO_JSON, GO_MOD, MAKEFILE, PACKAGE_LOCK_JSON, PNPM_LOCK_YAML, YARN_LOCK,
-    find_nearest,
+    CARGO_TOML, DENO_JSON, GO_MOD, MAKEFILE, PACKAGE_JSON, PACKAGE_LOCK_JSON, PNPM_LOCK_YAML,
+    YARN_LOCK, find_nearest,
 };
 
 fn find_build_file(cwd: &Path) -> Option<PathBuf> {
     find_nearest(
         cwd,
-        &[
-            PACKAGE_LOCK_JSON,
-            YARN_LOCK,
-            PNPM_LOCK_YAML,
-            DENO_JSON,
-            MAKEFILE,
-            CARGO_TOML,
-            GO_MOD,
-        ],
+        &[PACKAGE_JSON, DENO_JSON, MAKEFILE, CARGO_TOML, GO_MOD],
         crate::path::FindOptions::File,
     )
+}
+
+fn get_node_command(cwd: &Path, action: &Option<CommandAction>) -> &'static str {
+    let lock_file_path = find_nearest(
+        cwd,
+        &[PACKAGE_LOCK_JSON, YARN_LOCK, PNPM_LOCK_YAML],
+        crate::path::FindOptions::File,
+    );
+
+    match lock_file_path {
+        Some(path) if path.ends_with(YARN_LOCK) => get_yarn_command(action),
+        Some(path) if path.ends_with(PNPM_LOCK_YAML) => get_pnpm_command(action),
+        _ => get_npm_command(action),
+    }
 }
 
 fn get_npm_command(action: &Option<CommandAction>) -> &'static str {
@@ -117,9 +123,7 @@ pub fn run(args: &CommandArgs) -> anyhow::Result<()> {
         .and_then(|os_str| os_str.to_str());
 
     let cmd = match build_file_name {
-        Some(PACKAGE_LOCK_JSON) => Some(get_npm_command(&args.action)),
-        Some(YARN_LOCK) => Some(get_yarn_command(&args.action)),
-        Some(PNPM_LOCK_YAML) => Some(get_pnpm_command(&args.action)),
+        Some(PACKAGE_JSON) => Some(get_node_command(&cwd, &args.action)),
         Some(DENO_JSON) => Some(get_deno_command(&args.action)),
         Some(MAKEFILE) => Some(get_make_command(&args.action)),
         Some(CARGO_TOML) => get_cargo_command(&args.action),

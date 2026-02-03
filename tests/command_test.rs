@@ -59,6 +59,44 @@ fn npm() {
 }
 
 #[test]
+fn npm_workspace_with_makefile() {
+    let env = &TestEnv::new();
+
+    // ./
+    // +-- package.json
+    // +-- package-lock.json
+    // +-- workspace/
+    //     +-- package.json
+    //     +-- Makefile
+    //     +-- index.js
+    env.create_file("package.json");
+    env.create_file("package-lock.json");
+    env.create_file("index.js");
+    env.create_file("workspace/package.json");
+    env.create_file("workspace/Makefile");
+    env.create_file("workspace/index.js");
+
+    assert_eq!(run_cmd(env, "."), "npm\n");
+    assert_eq!(run_cmd_action(env, "build", "."), "npm run build\n");
+    assert_eq!(run_cmd_action(env, "run", "."), "npm start\n");
+    assert_eq!(run_cmd_action(env, "test", "."), "npm test\n");
+    assert_eq!(run_cmd_action(env, "lint", "."), "npm run lint\n");
+    assert_eq!(run_cmd_action(env, "format", "."), "npm run fmt\n");
+    assert_eq!(run_cmd_action(env, "generate", "."), "npm run gen\n");
+
+    assert_eq!(run_cmd(env, "workspace"), "npm\n");
+    assert_eq!(run_cmd_action(env, "build", "workspace"), "npm run build\n");
+    assert_eq!(run_cmd_action(env, "run", "workspace"), "npm start\n");
+    assert_eq!(run_cmd_action(env, "test", "workspace"), "npm test\n");
+    assert_eq!(run_cmd_action(env, "lint", "workspace"), "npm run lint\n");
+    assert_eq!(run_cmd_action(env, "format", "workspace"), "npm run fmt\n");
+    assert_eq!(
+        run_cmd_action(env, "generate", "workspace"),
+        "npm run gen\n"
+    );
+}
+
+#[test]
 fn yarn() {
     let env = &TestEnv::new();
 
