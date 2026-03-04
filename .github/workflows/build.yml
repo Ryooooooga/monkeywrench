@@ -113,7 +113,7 @@ jobs:
         shell: bash
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: artifact-${{ matrix.target }}
           path: ${{ steps.asset.outputs.asset }}
