@@ -270,7 +270,7 @@ fn go() {
     assert_eq!(run_cmd_action(env, "run", "."), "go run .\n");
     assert_eq!(run_cmd_action(env, "test", "."), "go test ./...\n");
     assert_eq!(run_cmd_action(env, "lint", "."), "golangci-lint run\n");
-    assert_eq!(run_cmd_action(env, "format", "."), "goimports -w .\n");
+    assert_eq!(run_cmd_action(env, "format", "."), "golangci-lint fmt\n");
     assert_eq!(run_cmd_action(env, "generate", "."), "go gen -v ./...\n");
 
     assert_eq!(run_cmd(env, "pkg"), "go\n");
@@ -278,7 +278,7 @@ fn go() {
     assert_eq!(run_cmd_action(env, "run", "pkg"), "go run .\n");
     assert_eq!(run_cmd_action(env, "test", "pkg"), "go test ./...\n");
     assert_eq!(run_cmd_action(env, "lint", "pkg"), "golangci-lint run\n");
-    assert_eq!(run_cmd_action(env, "format", "pkg"), "goimports -w .\n");
+    assert_eq!(run_cmd_action(env, "format", "pkg"), "golangci-lint fmt\n");
     assert_eq!(run_cmd_action(env, "generate", "pkg"), "go gen -v ./...\n");
 }
 
