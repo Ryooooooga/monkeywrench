@@ -109,7 +109,7 @@ fn get_go_command(action: &Option<CommandAction>) -> &'static str {
         Some(CommandAction::Test) => "go test ./...",
         Some(CommandAction::Lint) => "golangci-lint run",
         Some(CommandAction::Format) => "golangci-lint fmt",
-        Some(CommandAction::Generate) => "go gen -v ./...",
+        Some(CommandAction::Generate) => "go generate -v ./...",
         None => "go",
     }
 }
